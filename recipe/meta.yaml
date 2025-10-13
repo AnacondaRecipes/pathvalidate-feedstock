@@ -1,5 +1,5 @@
 {% set name = "pathvalidate" %}
-{% set version = "2.5.2" %}
+{% set version = "3.3.1" %}
 
 
 package:
@@ -8,35 +8,60 @@ package:
 
 source:
   url: https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz
-  sha256: 5ff57d0fabe5ecb7a4f1e4957bfeb5ad8ab5ab4c0fa71f79c6bbc24bd9b7d14d
+  sha256: b18c07212bfead624345bb8e1d6141cdcf15a39736994ea0b94035ad2b1ba177
 
 build:
   number: 0
-  noarch: python
-  script: {{ PYTHON }} -m pip install . -vv
+  skip: true  # [py<39]
+  script: {{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
 
 requirements:
   host:
     - pip
-    - python >=3.5
+    - python
+    - setuptools >=64
+    - setuptools_scm >=8
+    # https://github.com/thombashi/pathvalidate/blob/master/setup.py#L21
     - releasecmd
   run:
-    - python >=3.5
+    - python
+
+# E   ModuleNotFoundError: No module named 'tcolorpy'
+{% set ignore_tests = " --ignore=test/test_common.py" %}
+# E   ModuleNotFoundError: No module named 'allpairspy'
+{% set ignore_tests = ignore_tests + " --ignore=test/test_filepath.py" %}
+{% set ignore_tests = ignore_tests + " --ignore=test/test_filename.py" %}
 
 test:
+  source_files:
+    - test
   imports:
     - pathvalidate
-  commands:
-    - pip check
+    - pathvalidate._common
+    - pathvalidate._filename
+    - pathvalidate._filepath
+    - pathvalidate.argparse
+    - pathvalidate.click
+    - pathvalidate.error
+    - pathvalidate.handler
   requires:
     - pip
+    - pytest >=6.0.1
+    - click >=6.2
+  commands:
+    - pip check
+    - python -c "from importlib.metadata import version; assert(version('{{ name }}')=='{{ version }}')"
+    - pytest -v test {{ ignore_tests }}
 
 about:
   home: https://github.com/thombashi/pathvalidate
   summary: pathvalidate is a Python library to sanitize/validate a string such as filenames/file-paths/etc.
-  dev_url: https://github.com/thombashi/pathvalidate
+  description: pathvalidate is a Python library to sanitize/validate a string such as filenames/file-paths/etc.
   license: MIT
   license_file: LICENSE
+  license_family: MIT
+  dev_url: https://github.com/thombashi/pathvalidate
+  doc_url: https://pathvalidate.readthedocs.io
 
 extra:
   recipe-maintainers:
