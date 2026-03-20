@@ -21,8 +21,6 @@ requirements:
     - python
     - setuptools >=64
     - setuptools_scm >=8
-    # https://github.com/thombashi/pathvalidate/blob/master/setup.py#L21
-    - releasecmd
   run:
     - python
 
